@@ -8,25 +8,60 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  createdAt DateTime   @default(now())
+  email     String     @unique
+  password  String?
   name      String?
-  role      Role     @default(USER)
-  posts     Post[]
+  contracts Contract[]
+  keys      Key[]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
+model Key {
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  published Boolean  @default(false)
-  title     String   @db.VarChar(255)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+  name      String   @db.VarChar(255)
+  key       String   @db.VarChar(255)
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
 }
 
-enum Role {
-  USER
-  ADMIN
+model Contract {
+  id          String       @id @default(uuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  name        String       @db.VarChar(255)
+  repository  String       @db.Text
+  abi         String       @db.Text
+  bytecode    String       @db.Text
+  ownerId     String
+  owner       User         @relation(fields: [ownerId], references: [id])
+  deployments Deployment[]
+}
+
+model Deployment {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  published  Boolean  @default(false)
+  address    String   @db.VarChar(50)
+  abi        String   @db.Text
+  network    Int
+  platform   Platform @default(Ethereum)
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id])
+}
+
+enum Platform {
+  Ethereum
+  Arbitrum
+  Polygon
+  Starknet
+  Immutable
+  Loopring
+  Optimism
+  Hashgraph
+  Polkadot
+  Binance
 }
